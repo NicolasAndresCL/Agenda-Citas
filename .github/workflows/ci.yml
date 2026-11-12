@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  tests:
+    needs: lint
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: agenda
+          POSTGRES_PASSWORD: agenda
+          POSTGRES_DB: agenda_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agenda -d agenda_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://agenda:agenda@localhost:5432/agenda_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Pruebas con cobertura y evidencia JUnit
+        # -rs muestra los saltos: si la integración apareciera saltada, no corrió contra Postgres.
+        run: |
+          mkdir -p evidencias
+          pytest -rs --cov --cov-report=term-missing --cov-fail-under=85 \
+            --junitxml=evidencias/junit-pruebas.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-pruebas
+          path: evidencias/junit-pruebas.xml
+
+  build:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir la imagen
+        run: docker build -t agenda-citas:ci .
+      - name: Arrancar la imagen y comprobar /livez
+        run: |
+          trap 'docker rm -f agenda-ci >/dev/null 2>&1' EXIT
+          docker run -d --name agenda-ci -p 8001:8001 -e ALMACENAMIENTO=memoria agenda-citas:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8001/livez; then exit 0; fi
+            sleep 1
+          done
+          docker logs agenda-ci
+          exit 1

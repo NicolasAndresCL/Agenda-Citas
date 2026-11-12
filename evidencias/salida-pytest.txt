@@ -1,0 +1,45 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.16, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\dev\learning\SantoTomas\2doSemestre\DiseñoSoftware\agenda-citas
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.16.0, asyncio-1.4.1.post1, cov-7.1.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 49 items
+
+tests\api\test_api.py ............                                       [ 24%]
+tests\integration\test_postgres.py .......                               [ 38%]
+tests\test_version.py .                                                  [ 40%]
+tests\unit\test_agenda.py ........................                       [ 89%]
+tests\unit\test_cliente.py .....                                         [100%]
+
+- generated xml file: C:\dev\learning\SantoTomas\2doSemestre\DiseñoSoftware\agenda-citas\evidencias\junit-pruebas.xml -
+=============================== tests coverage ================================
+______________ coverage: platform win32, python 3.13.16-final-0 _______________
+
+Name                                         Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------
+agenda_citas\__init__.py                         1      0   100%
+agenda_citas\adapters\__init__.py                0      0   100%
+agenda_citas\adapters\inbound\__init__.py        0      0   100%
+agenda_citas\adapters\inbound\api.py           100      0   100%
+agenda_citas\adapters\outbound\__init__.py       0      0   100%
+agenda_citas\adapters\outbound\memoria.py       56      0   100%
+agenda_citas\adapters\outbound\postgres.py      86      1    99%   186
+agenda_citas\application\__init__.py             0      0   100%
+agenda_citas\application\agenda.py              30      0   100%
+agenda_citas\domain\__init__.py                  0      0   100%
+agenda_citas\domain\entidades.py                75      0   100%
+agenda_citas\domain\excepciones.py              19      0   100%
+agenda_citas\domain\puertos.py                  12      0   100%
+agenda_citas\infra\__init__.py                   0      0   100%
+agenda_citas\infra\config.py                    12      0   100%
+agenda_citas\infra\migrador.py                  18      0   100%
+agenda_citas\main.py                            41      8    80%   30-34, 45-51
+frontend\__init__.py                             0      0   100%
+frontend\cliente.py                             41      0   100%
+frontend\config.py                               7      7     0%   9-18
+--------------------------------------------------------------------------
+TOTAL                                          498     16    97%
+Required test coverage of 85% reached. Total coverage: 96.79%
+============================= 49 passed in 4.96s ==============================
