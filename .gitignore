@@ -1,0 +1,32 @@
+# Entornos y secretos
+.venv/
+.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+*.egg-info/
+build/
+dist/
+htmlcov/
+
+# Documentación interna no versionada
+CLAUDE.md
+memory.md
+aprendizaje.md
+pendientes.md
+
+# Evidencias intermedias (las entregables en evidencias/ sí se versionan)
+evidencias/*.tmp
+evidencias/trabajo/
+docs/trabajo/
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
