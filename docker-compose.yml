@@ -1,0 +1,65 @@
+# Para qué sirve levantar esto: probar el sistema completo (UI + API + PostgreSQL real), que es
+# la única forma de ejercitar el índice único parcial uq_cita_activa y las migraciones.
+#   docker compose up -d --build --wait     (UI en :8085, API en :8001)
+#   docker compose down                      (conserva los datos; `down -v` los borra)
+# Solo la base para las pruebas de integración:
+#   docker compose -p agenda-citas-test up -d --wait db   (con DB_PUERTO_HOST=5434)
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agenda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en tu .env}
+      POSTGRES_DB: ${POSTGRES_DB:-agenda}
+    volumes:
+      - datos_postgres:/var/lib/postgresql/data
+    ports:
+      - "${DB_PUERTO_HOST:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agenda} -d ${POSTGRES_DB:-agenda}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: ["python", "-m", "agenda_citas"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-agenda}:${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en tu .env}@db:5432/${POSTGRES_DB:-agenda}
+      ALMACENAMIENTO: postgres
+      APLICAR_MIGRACIONES: "true"
+      API_PORT: "8001"
+    ports:
+      - "${API_PUERTO_HOST:-8001}:8001"
+    healthcheck:
+      # /healthz sí consulta la base: la API está lista solo si Postgres responde.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  ui:
+    build: .
+    command: ["python", "-m", "frontend.app"]
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_URL: http://api:8001
+      FRONTEND_PORT: "8085"
+    ports:
+      - "${FRONTEND_PUERTO_HOST:-8085}:8085"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8085/', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  datos_postgres:
