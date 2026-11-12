@@ -1,6 +1,6 @@
 # Una sola imagen para la API y la interfaz: cambia solo el comando (ver docker-compose.yml).
 # ---------------------------------------------------------------- build
-FROM python:3.13-slim AS builder
+FROM python:3.15-slim AS builder
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /src
 COPY pyproject.toml README.md ./
@@ -11,7 +11,7 @@ RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install .
 
 # ---------------------------------------------------------------- runtime
-FROM python:3.13-slim AS runtime
+FROM python:3.15-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/opt/venv/bin:$PATH" \
     MIGRATIONS_DIR=/app/migrations
 RUN useradd --create-home --shell /usr/sbin/nologin agenda
